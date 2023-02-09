@@ -41,7 +41,7 @@ class Main extends Component {
 
         let filterStr = this.buildFilter_();
 
-        fetch("http://www.omdbapi.com/?apikey=" + apikey + filterStr)
+        fetch("https://www.omdbapi.com/?apikey=" + apikey + filterStr)
             .then((data) => data.json())
             .then((data) => {
                 this.setState({
