@@ -1,77 +1,60 @@
 import Movies from "../components/Movies";
-import { Component } from "react";
 import Preloader from "../components/Preloader";
 import Search from "../components/Search";
 import FilterPanel from "../components/FilterPanel";
+import { useState } from "react";
 
 const apikey = process.env.REACT_APP_API_KEY;
 
-class Main extends Component {
-    constructor() {
-        super();
-        this.state = {
-            isLoading: false,
-            movies: [],
-            filters: {
-                s: "Iron man",
-            },
-        };
-    }
+export default function Main() {
 
-    componentDidMount() {
-        this.updateMoviesBySearch("matrix");
-    }
+    const [isLoading, setIsLoading] = useState(false);
+    const [movies, setMovies] = useState([]);
+    const [filters, setFilters] = useState({ s: "Iron man" });
 
-    render() {
-        return (
-            <main className="content">
-                <Search addFilter={this.addFilter} />
-                <FilterPanel addFilter={this.addFilter} />
-                {!this.state.isLoading ? (
-                    <Movies data={this.state.movies} />
-                ) : (
-                    <Preloader />
-                )}
-            </main>
-        );
-    }
-
-    updateMoviesBySearch = () => {
-        this.setState({ movies: [], isLoading: true });
-
-        let filterStr = this.buildFilter_();
-
-        fetch("https://www.omdbapi.com/?apikey=" + apikey + filterStr)
-            .then((data) => data.json())
-            .then((data) => {
-                this.setState({
-                    movies: data.Search ? data.Search : [],
-                    isLoading: false,
-                });
-            })
-            .catch((err) => {
-                console.error(err);
-                this.setState({ movies: [], isLoading: false });
-            });
+    //Функция, через которую устанавливаются фильтры
+    const addFilter = (key, value) => {
+        setFilters({ ...filters, [key]: value }, () => updateMoviesBySearch());
     };
 
-    buildFilter_ = () => {
+    //Функция по которой строится фильтр для запроса
+    const buildFilter_ = () => {
         let result = "";
-        for (let key in this.state.filters) {
-            let value = this.state.filters[key];
+        for (let key in filters) {
+            let value = filters[key];
             if (value === null) continue;
             result += `&${key}=${value}`;
         }
         return result;
     };
 
-    addFilter = (key, value) => {
-        //this.state.filters[key] = value;
-        this.setState(
-            { filters: { ...this.state.filters, [key]: value } },
-            () => this.updateMoviesBySearch()
-        );
-    };
-}
+    const updateMoviesBySearch = () => {
+        setMovies([]);
+        setIsLoading(true);
+        let filterStr = buildFilter_();
 
-export default Main;
+        fetch("https://www.omdbapi.com/?apikey=" + apikey + filterStr)
+            .then((data) => data.json())
+            .then((data) => {
+                setMovies(data.Search ? data.Search : []);
+                setIsLoading(false);
+            })
+            .catch((err) => {
+                console.error(err);
+                setMovies([]);
+                setIsLoading(false);
+            });
+    };
+
+    return (
+        <main className="content">
+            <Search addFilter={addFilter} />
+            <FilterPanel addFilter={addFilter} />
+            {!isLoading ? (
+                <Movies data={movies} />
+            ) : (
+                <Preloader />
+            )}
+        </main>
+    );
+}

@@ -1,38 +1,28 @@
-import { Component } from "react";
+import { useState } from "react";
 
-class Search extends Component {
-    state = {
-        searchText: "",
-    };
+export default function Search(props) {
 
-    changeText = (e) => {
-        this.setState({searchText: e.target.value})
+    const [searchText, setSearchText] = useState("");
+
+    const changeText = (e) => {
+        setSearchText(e.target.value);
     }
 
-    doSearch = () => {
-        this.props.addFilter("s", this.state.searchText)
+    const doSearch = () => {
+        props.addFilter("s", searchText);
     }
-
-    render() {
-        return (
-            <div className="row">
-                <div className="input-field">
-                    <input
-                        type="search"
-                        className="materialize-textarea"
-                        placeholder="Search"
-                        onChange={this.changeText}
-                        onKeyDown={e=> {
-                            if(e.code === "Enter") {
-                                this.doSearch();
-                            }
-                        }}
-                    ></input>
-                    <button className="btn right" onClick={this.doSearch}>search</button>
-                </div>
+    return (
+        <div className="row">
+            <div className="input-field">
+                <input
+                    type="search"
+                    className="materialize-textarea"
+                    placeholder="Search"
+                    onChange={changeText}
+                    onKeyDown={e => { if (e.code === "Enter") doSearch(); }}
+                ></input>
+                <button className="btn right" onClick={this.doSearch}>search</button>
             </div>
-        );
-    }
+        </div>
+    );
 }
-
-export default Search
